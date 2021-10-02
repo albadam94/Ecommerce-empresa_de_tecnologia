@@ -1,47 +1,42 @@
-# Create your models here.
 from django.db import models
-
-# Crear los modelos de nuestro Checkout
+from django.db.models.fields import BooleanField, CharField, DateTimeField
+from productos.models import articulo
 
 class carrito(models.Model):
-    
-    usuario = models.CharField(max_length=100)     
-    dcto = models.FloatField(default=0)             
-    fecha = models.DateField(auto_now_add=True, blank=True, null=True)
+    perfil=models.CharField(max_length=200, null=False)
+    info_envio=models.CharField(max_length=200, null=False)
+    fecha=models.DateField(auto_now_add=True)
+    pagado=models.BooleanField(default=False)
 
-    #MÉTODOS
     def __str__(self):
-        #permite especificar la información de los objetos en base de datos
-        return self.usuario + " - " + str(self.fecha)
-    
+        return self.perfil + " - " + str(self.fecha)
+
+    @property
+    def cant_art(self):
+        cant = 0
+        items = producto.objects.filter(carrito=self)
+        for item in items:
+            cant += item.cantidad
+        return cant
+
+    @property
     def total(self):
         total = 0
-        items = Item.objects.filter(carrito=self)
+        items = producto.objects.filter(carrito=self)
         for item in items:
-            total += item.subtotal()
+            total+= item.subtotal
         return total
 
-class Productos(models.Model):
-    nombre = models.CharField(max_length=50)
-    precio = models.IntegerField()
-    categoria = models.CharField(choices='options', max_length=10)  
-    referencia= models.CharField(max_length=100,primary_key=True,null=False)
-
-    def __str__(self):
-        #Brindar una identificación general en base de datos (sección 'Admin')
-        return self.nombre
-
-class Item (models.Model):  
-    #<nomClase_minuscula>_set.all()     => ForeignKey
-
-
-    #ForeignKey => establecer una conexión entre el objeto 'Item' y 'CarritoCompras'
-    producto = models.ForeignKey('Producto', on_delete=models.CASCADE)        #ES un objeto del tipo producto
-    carrito = models.ForeignKey('CarritoCompras', on_delete=models.CASCADE)
+class producto (models.Model):  
+    carrito = models.ForeignKey(carrito, on_delete=models.CASCADE)
+    producto = models.ForeignKey(articulo, on_delete=models.SET_NULL, null=True)        
     cantidad = models.IntegerField(default=0)
     
     def __str__(self):
-        return self.producto.nombre
+        return self.carrito.perfil + "(" + self.producto.nombre + ")" + "[" + str(self.cantidad)+ "]"
     
+    @property
     def subtotal(self):
         return self.producto.precio*self.cantidad
+
+

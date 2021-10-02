@@ -1,7 +1,10 @@
 from django.contrib import admin
 from checkout.models import *
 
-# Register your models here.
-
 admin.site.register(carrito)
+admin.site.register(producto)
+
+
+
+
 
